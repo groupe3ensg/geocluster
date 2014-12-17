@@ -1,0 +1,37 @@
+ dbserver:
+  image: "jamesbrink/postgresql:latest"
+  volumes:
+    - /vagrant:/vagrant
+  environment:
+    PGPASSWORD: postgres
+  ports:
+    - "5432:5432"
+ data:
+  image: "busybox:latest"
+  command: "true"
+  volumes:
+    - /geoserver-data_dir
+ dbgeoserver:
+  image: "dduportal/geoserver:2.6.1"
+  volumes:
+    - /vagrant:/vagrant
+  environment:
+    - VIRTUAL_HOST=geoserver
+    - VIRTUAL_PORT=8080
+    - GEOSERVER_DATA_DIR=/geoserver-data_dir
+  expose:
+    - "8080"
+  links:
+    - dbserver
+  volumes_from:
+    - data
+ web:
+  image: "dduportal/dyn-nginx:latest"
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+  ports:
+    - "80:80"
+  links:
+    - dbgeoserver
+ tmp:
+  image: "dduportal/geoserver:2.6.1"

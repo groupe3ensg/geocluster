@@ -53,12 +53,12 @@ $ export name_tmp=$(docker ps | grep geoserver: |awk '{print $11}' | grep app_tm
 $ export ip_tmp=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $1 $name_tmp)
 $ export no_proxy=${no_proxy},${ip_tmp}
 ```
-###creation du workspace
+###creation of a workspace
 ```
 $ curl -v -u admin:geoserver -XPOST -H "Content-type: text/xml" -d "<workspace><name>myws2</name></workspace>" 
 http://${ip_tmp}:8080/geoserver/rest/workspaces
 ```
-###creation d'une postgis database
+###creation of a postgis database
 ```
 $ curl -v -u admin:geoserver -XPOST -T mydb.xml -H "Content-type: text/xml" 
 http://${ip_tmp}:8080/geoserver/rest/workspaces/myws2/datastores
@@ -81,13 +81,13 @@ $ dfig scale dbgeoserver=3
 ```
 $ sh boucle_dir.sh
 ```
-###killing the temporary geoserver and deleting the tmp reperotory
+###killing the temporary geoserver and deleting the tmp repertory
 ```
 $ docker kill $name_tmp
 $ rm -r tmp
 ```
 ## The script "boucle_dir.sh"
-In this script we run a loop that opy the data_dir of the temporary geoserver in the other geoserver containers.
+In this script we run a loop that copy the data_dir of the temporary geoserver in the other geoserver containers.
 
 ```
  for i in $(docker ps | grep geoserver:  | grep app_dbgeoser | awk '{print $1}')
@@ -102,7 +102,7 @@ In this file you have to replace in the host the ip adress with the ip adress of
 
 ```
 dfig ps
-docker inspact ${name_of_your_container}
+docker inspect ${name_of_your_container}
 ```
 ## The architecture
 ![](https://github.com/groupe3ensg/geocluster/blob/master/archi.PNG)

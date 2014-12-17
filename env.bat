@@ -1,0 +1,6 @@
+set HTTP_PROXY=http://10.0.4.2:3128
+set HTTPS_PROXY=http://10.0.4.2:3128
+set NO_PROXY=localhost
+set VAGRANT_HTTP_PROXY=http://10.0.4.2:3128
+set VAGRANT_HTTPS_PROXY=http://10.0.4.2:3128
+set VAGRANT_NO_PROXY=localhost

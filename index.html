@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=640">
+
+    <link rel="stylesheet" href="stylesheets/core.css" media="screen">
+    <link rel="stylesheet" href="stylesheets/mobile.css" media="handheld, only screen and (max-device-width:640px)">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+
+    <script type="text/javascript" src="javascripts/modernizr.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript" src="javascripts/headsmart.min.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function () {
+        $('#main_content').headsmart()
+      })
+    </script>
+    <title>Geocluster by groupe3ensg</title>
+  </head>
+
+  <body>
+    <a id="forkme_banner" href="https://github.com/groupe3ensg/geocluster">View on GitHub</a>
+    <div class="shell">
+
+      <header>
+        <span class="ribbon-outer">
+          <span class="ribbon-inner">
+            <h1>Geocluster</h1>
+            <h2>geoserver cluster project</h2>
+          </span>
+          <span class="left-tail"></span>
+          <span class="right-tail"></span>
+        </span>
+      </header>
+
+      <section id="downloads">
+        <span class="inner">
+          <a href="https://github.com/groupe3ensg/geocluster/zipball/master" class="zip"><em>download</em> .ZIP</a><a href="https://github.com/groupe3ensg/geocluster/tarball/master" class="tgz"><em>download</em> .TGZ</a>
+        </span>
+      </section>
+
+
+      <span class="banner-fix"></span>
+
+
+      <section id="main_content">
+        <h1>
+<a id="welcome-to-geocluster-page" class="anchor" href="#welcome-to-geocluster-page" aria-hidden="true"><span class="octicon octicon-link"></span></a>Welcome to geocluster Page.</h1>
+
+<p>Geocluster is a repository that represent an example of a geoserver cluster. In other words , we will create multiple geoserver containers with the same configuration and a long balacing that switch from one geoserver to another.
+We will also create a postgres container that contains the postgis data base .
+This page will guide you trough the geoserver cluster example. All you have to do is follow the steps :)
+ps: It is supposed that you already have both vagrant and boot2docker.</p>
+
+<pre><code>$ env.bat
+$ vagrant up
+$ vagrant plugin install vagrant-proxyconf
+$ vagrant ssh
+</code></pre>
+
+<p>Now that you are in your docker virtual machine, run the script "run.sh".</p>
+
+<h2>
+<a id="the-script-runsh" class="anchor" href="#the-script-runsh" aria-hidden="true"><span class="octicon octicon-link"></span></a>The script "run.sh"</h2>
+
+<p>In this script:</p>
+
+<h3>
+<a id="pulling-fig-image" class="anchor" href="#pulling-fig-image" aria-hidden="true"><span class="octicon octicon-link"></span></a>pulling fig image</h3>
+
+<pre><code>$ docker run -ti dduportal/fig
+</code></pre>
+
+<h3>
+<a id="creating-the-dfig-alias" class="anchor" href="#creating-the-dfig-alias" aria-hidden="true"><span class="octicon octicon-link"></span></a>creating the dfig alias</h3>
+
+<pre><code>$ alias dfig="docker run -ti -v \$(pwd):/app -v /vagrant:/vagrant -v /var/run/docker.sock:/var/run/docker.sock dduportal/fig"
+</code></pre>
+
+<h3>
+<a id="switching-to-the-fig-directory" class="anchor" href="#switching-to-the-fig-directory" aria-hidden="true"><span class="octicon octicon-link"></span></a>switching to the fig directory</h3>
+
+<pre><code>$ cd /vagrant/simple-db-fig
+</code></pre>
+
+<h3>
+<a id="creating-containers" class="anchor" href="#creating-containers" aria-hidden="true"><span class="octicon octicon-link"></span></a>creating containers</h3>
+
+<pre><code>$ dfig up -d
+</code></pre>
+
+<h3>
+<a id="showing-the-containers-already-created" class="anchor" href="#showing-the-containers-already-created" aria-hidden="true"><span class="octicon octicon-link"></span></a>showing the containers already created</h3>
+
+<pre><code>$ dfig ps
+</code></pre>
+
+<p>Now you have to run the script "env_geoserver_tmp.sh"</p>
+
+<h2>
+<a id="the-script-env_geoserver_tmpsh" class="anchor" href="#the-script-env_geoserver_tmpsh" aria-hidden="true"><span class="octicon octicon-link"></span></a>The script "env_geoserver_tmp.sh"</h2>
+
+<p>in this script we configure our temporary geoserver container. We will create a workespace , a datastore and add a database. In the end we will copy the data_dir of that container in the temporary repertory in order to copy it later in the data_dir of all the other geoserver containers .   </p>
+
+<h3>
+<a id="creating-the-postgis-database" class="anchor" href="#creating-the-postgis-database" aria-hidden="true"><span class="octicon octicon-link"></span></a>creating the postgis database</h3>
+
+<pre><code>$ dfig run dbserver psql -h dbserver -p 5432 -U postgres -f /vagrant/simple-db-fig/dab.sql
+</code></pre>
+
+<h3>
+<a id="retrieving-the-name-and-ip_adress-of-temporary-geoserver" class="anchor" href="#retrieving-the-name-and-ip_adress-of-temporary-geoserver" aria-hidden="true"><span class="octicon octicon-link"></span></a>retrieving the name and ip_adress of temporary geoserver</h3>
+
+<pre><code>$ export name_tmp=$(docker ps | grep geoserver: |awk '{print $11}' | grep app_tmp) 
+$ export ip_tmp=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $1 $name_tmp)
+$ export no_proxy=${no_proxy},${ip_tmp}
+</code></pre>
+
+<h3>
+<a id="creation-du-workspace" class="anchor" href="#creation-du-workspace" aria-hidden="true"><span class="octicon octicon-link"></span></a>creation du workspace</h3>
+
+<pre><code>$ curl -v -u admin:geoserver -XPOST -H "Content-type: text/xml" -d "&lt;workspace&gt;&lt;name&gt;myws2&lt;/name&gt;&lt;/workspace&gt;" 
+http://${ip_tmp}:8080/geoserver/rest/workspaces
+</code></pre>
+
+<h3>
+<a id="creation-dune-postgis-database" class="anchor" href="#creation-dune-postgis-database" aria-hidden="true"><span class="octicon octicon-link"></span></a>creation d'une postgis database</h3>
+
+<pre><code>$ curl -v -u admin:geoserver -XPOST -T mydb.xml -H "Content-type: text/xml" 
+http://${ip_tmp}:8080/geoserver/rest/workspaces/myws2/datastores
+$ curl -v -u admin:geoserver -XGET http://${ip_tmp}:8080/geoserver/rest/workspaces/myws2/datastores/dab.xml
+</code></pre>
+
+<h3>
+<a id="adding-a-table" class="anchor" href="#adding-a-table" aria-hidden="true"><span class="octicon octicon-link"></span></a>adding a table</h3>
+
+<pre><code>$ curl -v -u admin:geoserver -XPOST -H "Content-type: text/xml" -d "&lt;featureType&gt;&lt;name&gt;shapefile&lt;/name&gt;&lt;/featureType&gt;" http://${ip_tmp}:8080/geoserver/rest/workspaces/myws2/datastores/dab/featuretypes
+</code></pre>
+
+<h1>
+<a id="copying-the-data_dir-in-a-repertory-tmp" class="anchor" href="#copying-the-data_dir-in-a-repertory-tmp" aria-hidden="true"><span class="octicon octicon-link"></span></a>copying the data_dir in a repertory "tmp"</h1>
+
+<pre><code>$ mkdir tmp
+$ sudo docker cp $name_tmp:/app/geoserver-2.6.1/data_dir /vagrant/simple-db-fig/tmp
+</code></pre>
+
+<h3>
+<a id="creating-multiple-geoservers" class="anchor" href="#creating-multiple-geoservers" aria-hidden="true"><span class="octicon octicon-link"></span></a>creating multiple geoservers</h3>
+
+<pre><code>$ dfig scale dbgeoserver=3
+</code></pre>
+
+<h3>
+<a id="calling-the-dir_script" class="anchor" href="#calling-the-dir_script" aria-hidden="true"><span class="octicon octicon-link"></span></a>calling the dir_script</h3>
+
+<pre><code>$ sh boucle_dir.sh
+</code></pre>
+
+<h3>
+<a id="killing-the-temporary-geoserver-and-deleting-the-tmp-reperotory" class="anchor" href="#killing-the-temporary-geoserver-and-deleting-the-tmp-reperotory" aria-hidden="true"><span class="octicon octicon-link"></span></a>killing the temporary geoserver and deleting the tmp reperotory</h3>
+
+<pre><code>$ docker kill $name_tmp
+$ rm -r tmp
+</code></pre>
+
+<h2>
+<a id="the-script-boucle_dirsh" class="anchor" href="#the-script-boucle_dirsh" aria-hidden="true"><span class="octicon octicon-link"></span></a>The script "boucle_dir.sh"</h2>
+
+<p>In this script we run a loop that opy the data_dir of the temporary geoserver in the other geoserver containers.</p>
+
+<pre><code> for i in $(docker ps | grep geoserver:  | grep app_dbgeoser | awk '{print $1}')
+    do
+    export dir=$(docker inspect $i | grep "\"/geoserver-data_dir\": \"" | awk '{print $2}' | sed "s/\"//g" | sed "s/,//g ")
+    echo "chemin: ${dir}"
+    sudo cp -r /vagrant/simple-db-fig/tmp2/data_dir ${dir}
+done 
+</code></pre>
+
+<h2>
+<a id="the-mydbxml" class="anchor" href="#the-mydbxml" aria-hidden="true"><span class="octicon octicon-link"></span></a>The "mydb.xml"</h2>
+
+<p>In this file you have to replace in the host the ip adress with the ip adress of your container that you can retrieve by this two commands:</p>
+
+<pre><code>dfig ps
+docker inspact ${name_of_your_container}
+</code></pre>
+
+<h2>
+<a id="the-architecture" class="anchor" href="#the-architecture" aria-hidden="true"><span class="octicon octicon-link"></span></a>The architecture</h2>
+
+<p><img src="https://github.com/groupe3ensg/geocluster/blob/master/archi.PNG" alt=""></p>
+      </section>
+
+      <footer>
+        <span class="ribbon-outer">
+          <span class="ribbon-inner">
+            <p>this project by <a href="https://github.com/groupe3ensg">groupe3ensg</a> can be found on <a href="https://github.com/groupe3ensg/geocluster">GitHub</a></p>
+          </span>
+          <span class="left-tail"></span>
+          <span class="right-tail"></span>
+        </span>
+        <p>Generated with <a href="http://pages.github.com">GitHub Pages</a> using Merlot</p>
+        <span class="octocat"></span>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>

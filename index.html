@@ -122,14 +122,14 @@ $ export no_proxy=${no_proxy},${ip_tmp}
 </code></pre>
 
 <h3>
-<a id="creation-du-workspace" class="anchor" href="#creation-du-workspace" aria-hidden="true"><span class="octicon octicon-link"></span></a>creation du workspace</h3>
+<a id="creation-of-a-workspace" class="anchor" href="#creation-of-a-workspace" aria-hidden="true"><span class="octicon octicon-link"></span></a>creation of a workspace</h3>
 
 <pre><code>$ curl -v -u admin:geoserver -XPOST -H "Content-type: text/xml" -d "&lt;workspace&gt;&lt;name&gt;myws2&lt;/name&gt;&lt;/workspace&gt;" 
 http://${ip_tmp}:8080/geoserver/rest/workspaces
 </code></pre>
 
 <h3>
-<a id="creation-dune-postgis-database" class="anchor" href="#creation-dune-postgis-database" aria-hidden="true"><span class="octicon octicon-link"></span></a>creation d'une postgis database</h3>
+<a id="creation-of-a-postgis-database" class="anchor" href="#creation-of-a-postgis-database" aria-hidden="true"><span class="octicon octicon-link"></span></a>creation of a postgis database</h3>
 
 <pre><code>$ curl -v -u admin:geoserver -XPOST -T mydb.xml -H "Content-type: text/xml" 
 http://${ip_tmp}:8080/geoserver/rest/workspaces/myws2/datastores
@@ -162,7 +162,7 @@ $ sudo docker cp $name_tmp:/app/geoserver-2.6.1/data_dir /vagrant/simple-db-fig/
 </code></pre>
 
 <h3>
-<a id="killing-the-temporary-geoserver-and-deleting-the-tmp-reperotory" class="anchor" href="#killing-the-temporary-geoserver-and-deleting-the-tmp-reperotory" aria-hidden="true"><span class="octicon octicon-link"></span></a>killing the temporary geoserver and deleting the tmp reperotory</h3>
+<a id="killing-the-temporary-geoserver-and-deleting-the-tmp-repertory" class="anchor" href="#killing-the-temporary-geoserver-and-deleting-the-tmp-repertory" aria-hidden="true"><span class="octicon octicon-link"></span></a>killing the temporary geoserver and deleting the tmp repertory</h3>
 
 <pre><code>$ docker kill $name_tmp
 $ rm -r tmp
@@ -171,7 +171,7 @@ $ rm -r tmp
 <h2>
 <a id="the-script-boucle_dirsh" class="anchor" href="#the-script-boucle_dirsh" aria-hidden="true"><span class="octicon octicon-link"></span></a>The script "boucle_dir.sh"</h2>
 
-<p>In this script we run a loop that opy the data_dir of the temporary geoserver in the other geoserver containers.</p>
+<p>In this script we run a loop that copy the data_dir of the temporary geoserver in the other geoserver containers.</p>
 
 <pre><code> for i in $(docker ps | grep geoserver:  | grep app_dbgeoser | awk '{print $1}')
     do
@@ -187,7 +187,7 @@ done
 <p>In this file you have to replace in the host the ip adress with the ip adress of your container that you can retrieve by this two commands:</p>
 
 <pre><code>dfig ps
-docker inspact ${name_of_your_container}
+docker inspect ${name_of_your_container}
 </code></pre>
 
 <h2>
